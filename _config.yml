@@ -84,5 +84,6 @@ deploy:
 
 backup:
   type: git
+  theme: next
   repository:
       github: git@github.com:StormBolt/stormbolt.github.io.git,hexo
