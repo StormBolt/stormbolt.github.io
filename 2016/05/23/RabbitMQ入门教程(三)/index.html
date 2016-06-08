@@ -1,0 +1,638 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="RabbitMQ," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="RabbitMQ入门教程之工作队列上一章节中，我们通过队列(queue)发送接收一个包含”hello rabbitmq!”的消息，这个章节我们将学习用于多个消费者(consumer)之间分发耗时任务的工作队列(Work Queue)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ入门教程(三)">
+<meta property="og:url" content="http://yoursite.com/2016/05/23/RabbitMQ入门教程(三)/index.html">
+<meta property="og:site_name" content="jareddu的奇妙小世界">
+<meta property="og:description" content="RabbitMQ入门教程之工作队列上一章节中，我们通过队列(queue)发送接收一个包含”hello rabbitmq!”的消息，这个章节我们将学习用于多个消费者(consumer)之间分发耗时任务的工作队列(Work Queue)">
+<meta property="og:image" content="http://www.rabbitmq.com/img/tutorials/python-two.png">
+<meta property="og:image" content="http://o7j5cr753.bkt.clouddn.com/OJM_VY%5D99RVK98C%7D36QY95X.png">
+<meta property="og:image" content="http://o7j5cr753.bkt.clouddn.com/QQ%E5%9B%BE%E7%89%8720160607165636.png">
+<meta property="og:image" content="http://o7j5cr753.bkt.clouddn.com/QQ%E5%9B%BE%E7%89%8720160607181931.png">
+<meta property="og:updated_time" content="2016-06-08T05:52:11.751Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RabbitMQ入门教程(三)">
+<meta name="twitter:description" content="RabbitMQ入门教程之工作队列上一章节中，我们通过队列(queue)发送接收一个包含”hello rabbitmq!”的消息，这个章节我们将学习用于多个消费者(consumer)之间分发耗时任务的工作队列(Work Queue)">
+<meta name="twitter:image" content="http://www.rabbitmq.com/img/tutorials/python-two.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> RabbitMQ入门教程(三) | jareddu的奇妙小世界 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">jareddu的奇妙小世界</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                RabbitMQ入门教程(三)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-23T16:07:17+08:00" content="2016-05-23">
+              2016-05-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/RabbitMQ教程/" itemprop="url" rel="index">
+                    <span itemprop="name">RabbitMQ教程</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/05/23/RabbitMQ入门教程(三)/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/05/23/RabbitMQ入门教程(三)/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="RabbitMQ入门教程之工作队列"><a href="#RabbitMQ入门教程之工作队列" class="headerlink" title="RabbitMQ入门教程之工作队列"></a>RabbitMQ入门教程之工作队列</h2><p>上一章节中，我们通过队列(queue)发送接收一个包含”hello rabbitmq!”的消息，这个章节我们将学习用于多个消费者(consumer)之间分发耗时任务的工作队列(Work Queue)<br><br><a id="more"></a><br><img src="http://www.rabbitmq.com/img/tutorials/python-two.png" alt=""><br><br>工作队列（又名:Task Queues）的主要思想是避免立即进行资源密集型任务，并等待它完成;相反地,我们安排任务，稍后才去完成。我们将任务封装成一个消息，然后将它发送到队列。在后台运行的一个消费者进程将弹出任务，并最终执行任务。多个消费者共享这个任务</p>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><p>我们将模拟下真是场景下的耗时任务;我们知道每个任务根据业务的不同,耗时可能也是不一样的，因此先写一个耗时模拟生成器，来模拟真实场景的耗时<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TimeParrot</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">simulating</span><span class="params">()</span></span>&#123;</span><br><span class="line">		Random random = <span class="keyword">new</span> Random();</span><br><span class="line">		<span class="keyword">return</span> random.nextInt(<span class="number">50</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>消息体包含两部分，id是消息的序列号，time是模拟的耗时时间：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">int</span> id;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">long</span> time;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> id;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(<span class="keyword">int</span> id)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.id = id;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getTime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> time;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTime</span><span class="params">(<span class="keyword">long</span> sleepTime)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.time = time;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们模拟一个生产者<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Produtor</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">    Logger logger = Logger.getLogger(Produtor.class);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			ConnectionFactory factory = <span class="keyword">new</span> ConnectionFactory();</span><br><span class="line">            factory.setHost(<span class="string">"10.5.28.81"</span>);</span><br><span class="line">            factory.setPort(<span class="number">5672</span>);</span><br><span class="line">            factory.setUsername(<span class="string">"guest"</span>);</span><br><span class="line">            factory.setPassword(<span class="string">"guest"</span>);</span><br><span class="line">            Connection connection = factory.newConnection();</span><br><span class="line">            Channel channel = connection.createChannel();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            	String msg = produceMsg(i);</span><br><span class="line">            	channel.basicPublish(<span class="string">""</span>, <span class="string">"my_queue"</span>, <span class="keyword">null</span>, msg.getBytes());</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			logger.error(<span class="string">"********* channel publish msg fail"</span>);</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/***</span><br><span class="line">	 *</span><br><span class="line">	 * 功能描述：生产消息</span><br><span class="line">	 *</span><br><span class="line">	 * <span class="doctag">@param</span> id 消息序列号</span><br><span class="line">	 * <span class="doctag">@return</span></span><br><span class="line">	 * <span class="doctag">@author</span> jareddu</span><br><span class="line">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">produceMsg</span><span class="params">(<span class="keyword">int</span> id)</span></span>&#123;</span><br><span class="line">		Message message = <span class="keyword">new</span> Message(id,TimeParrot.simulating());</span><br><span class="line">		<span class="keyword">return</span> JSON.toJSONString(message);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面是负责处理任务的任务人员<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Worker</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">	Logger logger = Logger.getLogger(Worker.class);</span><br><span class="line">	<span class="keyword">private</span> String wid;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Worker</span><span class="params">(String wid)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.wid = wid;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			ConnectionFactory factory = <span class="keyword">new</span> ConnectionFactory();</span><br><span class="line">	        factory.setHost(<span class="string">"10.5.28.81"</span>);</span><br><span class="line">	        factory.setPort(<span class="number">5672</span>);</span><br><span class="line">	        factory.setUsername(<span class="string">"guest"</span>);</span><br><span class="line">	        factory.setPassword(<span class="string">"guest"</span>);</span><br><span class="line">	        Connection connection = factory.newConnection();</span><br><span class="line">	        Channel channel = connection.createChannel();</span><br><span class="line">	        channel.basicQos(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">final</span> Consumer consumer = <span class="keyword">new</span> DefaultConsumer(channel) &#123;</span><br><span class="line">				  <span class="meta">@Override</span></span><br><span class="line">				  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleDelivery</span><span class="params">(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, <span class="keyword">byte</span>[] body)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">				    String message = <span class="keyword">new</span> String(body, <span class="string">"UTF-8"</span>);</span><br><span class="line">				    Message msgObj = JSON.parseObject(message, Message.class);</span><br><span class="line">				    logger.info(<span class="string">"******** worker-"</span> + wid + <span class="string">" received message-"</span> + msgObj.getId());</span><br><span class="line">				    <span class="keyword">try</span> &#123;</span><br><span class="line">				    	TimeUnit.SECONDS.sleep(msgObj.getTime());</span><br><span class="line">				    &#125;<span class="keyword">catch</span>(InterruptedException e) &#123;</span><br><span class="line">						e.printStackTrace();</span><br><span class="line">					&#125;<span class="keyword">finally</span>&#123;</span><br><span class="line">						logger.info(<span class="string">"######## worker-"</span> + wid + <span class="string">" has done message-"</span> + msgObj.getId());</span><br><span class="line">				    &#125;</span><br><span class="line">				  &#125;</span><br><span class="line">				&#125;;</span><br><span class="line">			channel.basicConsume(<span class="string">"my_queue"</span>, <span class="keyword">true</span>, consumer);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			logger.error(<span class="string">"******** channel consume error ..."</span>);</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>马上开始测试吧<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">	ExecutorService executorService = Executors.newFixedThreadPool(<span class="number">20</span>);</span><br><span class="line">	executorService.submit(<span class="keyword">new</span> Worker(<span class="string">"100001"</span>));</span><br><span class="line">	executorService.submit(<span class="keyword">new</span> Worker(<span class="string">"100002"</span>));</span><br><span class="line">	executorService.submit(<span class="keyword">new</span> Worker(<span class="string">"100003"</span>));</span><br><span class="line">	executorService.submit(<span class="keyword">new</span> Produtor());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>测试结果如下：<br><img src="http://o7j5cr753.bkt.clouddn.com/OJM_VY%5D99RVK98C%7D36QY95X.png" alt="运行结果"><br>默认的，RabbitMQ会一个一个的发送信息给下一个消费者(consumer)，而不考虑每个任务的时长等等，且是一次性分配，并非一个一个分配。平均的每个消费者将会获得相等数量的消息。这样分发消息的方式叫做<code>round-robin</code></p>
+<h4 id="消息应答-message-acknowledgments"><a href="#消息应答-message-acknowledgments" class="headerlink" title="消息应答(message acknowledgments)"></a>消息应答(message acknowledgments)</h4><p>前面的两个例子，我们学会了如何去发送和接收消息；接下来，你可能要想，如果一个消费者在执行任务的过程中因为一些原因突然进程中断了，而这个任务恰恰又是比较重要的，不允许不处理；其实上面的代码中，RabbitMQ一旦将一个消息分发给一个消费者以后，会立马从内存中移除这个信息，如果这样的话，这要求你的代码完全不会有异常中断的情况，下面我们来模拟异常中断的情况，看看会出现什么情况<br>现在我们将消费者修改下，当消费者100001处理到序列大于5时的消息时，线程中断，看看这个消息会不会被其他的消费者处理<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Worker</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">	Logger logger = Logger.getLogger(Worker.class);</span><br><span class="line">	<span class="keyword">private</span> String wid;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Worker</span><span class="params">(String wid)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.wid = wid;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			ConnectionFactory factory = <span class="keyword">new</span> ConnectionFactory();</span><br><span class="line">	        factory.setHost(<span class="string">"10.5.28.81"</span>);</span><br><span class="line">	        factory.setPort(<span class="number">5672</span>);</span><br><span class="line">	        factory.setUsername(<span class="string">"guest"</span>);</span><br><span class="line">	        factory.setPassword(<span class="string">"guest"</span>);</span><br><span class="line">	        Connection connection = factory.newConnection();</span><br><span class="line">	        Channel channel = connection.createChannel();</span><br><span class="line"></span><br><span class="line">			<span class="keyword">final</span> Consumer consumer = <span class="keyword">new</span> DefaultConsumer(channel) &#123;</span><br><span class="line">				  <span class="meta">@Override</span></span><br><span class="line">				  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleDelivery</span><span class="params">(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, <span class="keyword">byte</span>[] body)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">				    String message = <span class="keyword">new</span> String(body, <span class="string">"UTF-8"</span>);</span><br><span class="line">				    Message msgObj = JSON.parseObject(message, Message.class);</span><br><span class="line">				    logger.info(<span class="string">"******** worker-"</span> + wid + <span class="string">" received message-"</span> + msgObj.getId());</span><br><span class="line">				    <span class="keyword">try</span>&#123;</span><br><span class="line">					    <span class="keyword">if</span> (<span class="string">"100001"</span>.equals(wid) &amp;&amp; msgObj.getId() &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">					    	Thread.currentThread().interrupt();</span><br><span class="line">						&#125;<span class="keyword">else</span> &#123;</span><br><span class="line">						    TimeUnit.SECONDS.sleep(msgObj.getTime());</span><br><span class="line">							logger.info(<span class="string">"######## worker-"</span> + wid + <span class="string">" has done message-"</span> + msgObj.getId());</span><br><span class="line">						&#125;</span><br><span class="line">				    &#125;<span class="keyword">catch</span>(InterruptedException e) &#123;</span><br><span class="line">				    	logger.error(<span class="string">"$$$$$$$$$$ worker-"</span>+wid+<span class="string">" has interrupted"</span>);</span><br><span class="line">						e.printStackTrace();</span><br><span class="line">					&#125;</span><br><span class="line">				  &#125;</span><br><span class="line">				&#125;;</span><br><span class="line">			channel.basicConsume(<span class="string">"my_queue"</span>, <span class="keyword">true</span>, consumer);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行结果如下：<br><img src="http://o7j5cr753.bkt.clouddn.com/QQ%E5%9B%BE%E7%89%8720160607165636.png" alt=""><br>任务6接收后未被正常处理，在100001消费者中断后，任务6没有被转发给其他的消费者继续处理；而我们希望一个工作者被杀死后，我们希望能将任务传递给下一个工作者。为了保证消息永远不会丢失，RabbitMQ支持消息应答（message acknowledgments),消费者发消息给RabbitMQ,告诉它信息已经被接收和处理，后RabbitMQ可以自由的进行信息删除。<br>下面我们来演示一下,我们修改下Worker.java代码<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Worker</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">	Logger logger = Logger.getLogger(Worker.class);</span><br><span class="line">	<span class="keyword">private</span> String wid;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Worker</span><span class="params">(String wid)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">super</span>();</span><br><span class="line">		<span class="keyword">this</span>.wid = wid;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			ConnectionFactory factory = <span class="keyword">new</span> ConnectionFactory();</span><br><span class="line">			factory.setHost(<span class="string">"10.5.28.81"</span>);</span><br><span class="line">			factory.setPort(<span class="number">5672</span>);</span><br><span class="line">			factory.setUsername(<span class="string">"dujiacheng"</span>);</span><br><span class="line">			factory.setPassword(<span class="string">"dujiacheng"</span>);</span><br><span class="line">			Connection connection = factory.newConnection();</span><br><span class="line">			Channel channel = connection.createChannel();</span><br><span class="line">			channel.basicQos(<span class="number">1</span>);</span><br><span class="line">			channel.queueDeclare(<span class="string">"first_my_msg"</span>, <span class="keyword">true</span>, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">null</span>);</span><br><span class="line">			QueueingConsumer consumer = <span class="keyword">new</span> QueueingConsumer(channel);</span><br><span class="line">			<span class="keyword">boolean</span> ack = <span class="keyword">false</span>; <span class="comment">// 打开应答机制</span></span><br><span class="line">			channel.basicConsume(<span class="string">"first_my_msg"</span>, ack, consumer);</span><br><span class="line">			<span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">				QueueingConsumer.Delivery delivery = consumer.nextDelivery();</span><br><span class="line">				String message = <span class="keyword">new</span> String(delivery.getBody());</span><br><span class="line">				Message msgObj = JSON.parseObject(message, Message.class);</span><br><span class="line">				logger.info(<span class="string">"******** worker-"</span> + wid + <span class="string">" received message-"</span> + msgObj.getId());</span><br><span class="line">				<span class="keyword">if</span> (<span class="string">"100001"</span>.equals(wid) &amp;&amp; msgObj.getId() &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">					logger.error(<span class="string">"$$$$$$$$ worker-"</span> + wid + <span class="string">"has finish, message-"</span> + msgObj.getId() + <span class="string">"is not handing"</span>);</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">					TimeUnit.SECONDS.sleep(msgObj.getTime());</span><br><span class="line">					logger.info(<span class="string">"######## worker-"</span> + wid + <span class="string">" has done message-"</span> + msgObj.getId());</span><br><span class="line">					<span class="comment">// 发送应答</span></span><br><span class="line">					channel.basicAck(delivery.getEnvelope().getDeliveryTag(), <span class="keyword">false</span>);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125; <span class="keyword">catch</span> (TimeoutException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>运行结果：<br><img src="http://o7j5cr753.bkt.clouddn.com/QQ%E5%9B%BE%E7%89%8720160607181931.png" alt=""><br>可以看到未被消费者100001处理成功的消息，会立马转发给消费者100003进行处理</p>
+<h4 id="消息持久化"><a href="#消息持久化" class="headerlink" title="消息持久化"></a>消息持久化</h4><p>上面，我们知道了，消费被杀死，可以不丢失消息；但如果此时我停止了RabbitMQ服务的话，那么消息仍会丢失掉；如果我们想不丢失我们的队列和消息，需要对队列和消息设置持久化的标志</p>
+<ul>
+<li>设置RabbitMQ持久化我们的队列<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">boolean</span> durable = <span class="keyword">true</span>;</span><br><span class="line">channel.queueDeclare(<span class="string">"task_queue"</span>, durable, <span class="keyword">false</span>, <span class="keyword">false</span>, <span class="keyword">null</span>);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>ps:RabbitMQ不允许使用不同的参数重新定义一个队列，所以已经存在的队列，我们无法修改其属性。</p>
+<ul>
+<li>信息为持久化<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">channel.basicPublish(<span class="string">""</span>, <span class="string">"task_queue"</span>,MessageProperties.PERSISTENT_TEXT_PLAIN,message.getBytes());</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="公平转发（Fair-dispatch）"><a href="#公平转发（Fair-dispatch）" class="headerlink" title="公平转发（Fair dispatch）"></a>公平转发（Fair dispatch）</h4><p>或许会发现，目前的消息转发机制（Round-robin）并非是我们想要的。例如，这样一种情况，对于两个消费者，有一系列的任务，奇数任务特别耗时，而偶数任务却很轻松，这样造成一个消费者一直繁忙，另一个消费者却很快执行完任务后等待。<br>造成这样的原因是因为RabbitMQ仅仅是当消息到达队列进行转发消息。并不在乎有多少任务消费者并未传递一个应答给RabbitMQ。仅仅盲目转发所有的奇数给一个消费者，偶数给另一个消费者。<br>为了解决这样的问题，我们可以使用basicQos方法，传递参数为prefetchCount = 1。这样告诉RabbitMQ不要在同一时间给一个消费者超过一条消息。换句话说，只有在消费者空闲的时候会发送下一条信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int prefetchCount = 1;  </span><br><span class="line">channel.basicQos(prefetchCount);</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/RabbitMQ/" rel="tag">#RabbitMQ</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/23/java泛型擦除的几点思考/" rel="next" title="java泛型擦除的几点思考">
+                <i class="fa fa-chevron-left"></i> java泛型擦除的几点思考
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/05/23/RabbitMQ入门教程(三)/"
+           data-title="RabbitMQ入门教程(三)" data-url="http://yoursite.com/2016/05/23/RabbitMQ入门教程(三)/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://o7j5cr753.bkt.clouddn.com/headpic.jpg"
+               alt="jareddu" />
+          <p class="site-author-name" itemprop="name">jareddu</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RabbitMQ入门教程之工作队列"><span class="nav-number">1.</span> <span class="nav-text">RabbitMQ入门教程之工作队列</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备"><span class="nav-number">1.0.1.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息应答-message-acknowledgments"><span class="nav-number">1.0.2.</span> <span class="nav-text">消息应答(message acknowledgments)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息持久化"><span class="nav-number">1.0.3.</span> <span class="nav-text">消息持久化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#公平转发（Fair-dispatch）"><span class="nav-number">1.0.4.</span> <span class="nav-text">公平转发（Fair dispatch）</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jareddu</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"stormbolt"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+  
+
+
+
+
+
+  
+  
+  
+
+  
+
+  
+
+</body>
+</html>
